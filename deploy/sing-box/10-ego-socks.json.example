@@ -1,0 +1,10 @@
+{
+  "inbounds": [
+    {
+      "type": "socks",
+      "tag": "ego-browser-socks",
+      "listen": "127.0.0.1",
+      "listen_port": 10809
+    }
+  ]
+}

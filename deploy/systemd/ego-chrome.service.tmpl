@@ -1,0 +1,20 @@
+[Unit]
+Description=Google Chrome (CDP) for ego-browser
+After={{SOCKS_SERVICE}} ego-xvfb.service ego-openbox.service
+Wants={{SOCKS_SERVICE}} ego-openbox.service
+Requires=ego-xvfb.service
+
+[Service]
+Type=simple
+User={{USER}}
+Group={{GROUP}}
+EnvironmentFile={{HOME}}/.config/ego-browser/env
+ExecStartPre=/bin/sh -c 'rm -rf {{PROFILE_DIR}}/Default/Sessions {{PROFILE_DIR}}/SingletonLock {{PROFILE_DIR}}/SingletonCookie {{PROFILE_DIR}}/SingletonSocket'
+ExecStart=/usr/bin/google-chrome-stable --user-data-dir={{PROFILE_DIR}} --remote-debugging-port={{CDP_PORT}} --remote-debugging-address=127.0.0.1 --remote-allow-origins=* --proxy-server=socks5://127.0.0.1:{{SOCKS_PORT}} --proxy-bypass-list=<-loopback>;127.0.0.1;localhost;[::1] "--host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE 127.0.0.1" --force-webrtc-ip-handling-policy=disable_non_proxied_udp --no-first-run --no-default-browser-check --hide-crash-restore-bubble --window-size=1280,900 --force-device-scale-factor=1 --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-renderer-backgrounding --password-store=basic about:blank
+KillMode=mixed
+TimeoutStopSec=15
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

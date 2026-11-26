@@ -1,0 +1,17 @@
+[Unit]
+Description=SSH tunnel to remote sing-box local SOCKS inbound (127.0.0.1:{{SOCKS_PORT}})
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{USER}}
+Group={{GROUP}}
+# Route through remote sing-box loopback SOCKS inbound so traffic is counted in Clash API / Zashboard.
+# If the remote host has no sing-box SOCKS inbound, replace -L 127.0.0.1:{{SOCKS_PORT}}:127.0.0.1:{{SOCKS_PORT}} with -D 127.0.0.1:{{SOCKS_PORT}}.
+ExecStart=/usr/bin/ssh -N -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o StrictHostKeyChecking=accept-new -L 127.0.0.1:{{SOCKS_PORT}}:127.0.0.1:{{SOCKS_PORT}} {{SOCKS_SSH_HOST}}
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

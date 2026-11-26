@@ -1,0 +1,16 @@
+[Unit]
+Description=noVNC websockify upstream for ego-browser console
+After=ego-x11vnc.service
+Requires=ego-x11vnc.service
+
+[Service]
+Type=simple
+User={{USER}}
+Group={{GROUP}}
+# Kept strictly on loopback; ego-console proxies /vnc/* and WebSocket traffic here.
+ExecStart=/usr/bin/websockify --web=/usr/share/novnc 127.0.0.1:{{NOVNC_PORT}} 127.0.0.1:{{VNC_PORT}}
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

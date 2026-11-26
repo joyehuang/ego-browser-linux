@@ -1,0 +1,15 @@
+[Unit]
+Description=Xvfb virtual display {{DISPLAY}} for ego-browser
+After=network.target
+
+[Service]
+Type=simple
+User={{USER}}
+Group={{GROUP}}
+ExecStart=/usr/bin/Xvfb {{DISPLAY}} -screen 0 1280x900x24 -nolisten tcp -ac
+ExecStartPost=/bin/sh -c 'i=0; while [ ! -S /tmp/.X11-unix/X{{DISPLAY_NUM}} ]; do i=$((i+1)); [ "$i" -ge 50 ] && exit 1; sleep 0.1; done'
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

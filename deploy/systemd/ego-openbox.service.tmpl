@@ -1,0 +1,16 @@
+[Unit]
+Description=Openbox window manager for ego-browser
+After=ego-xvfb.service
+Requires=ego-xvfb.service
+
+[Service]
+Type=simple
+User={{USER}}
+Group={{GROUP}}
+EnvironmentFile={{HOME}}/.config/ego-browser/env
+ExecStart=/usr/bin/openbox
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,27 @@
+{
+  "name": "ego-browser-linux-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted Linux VPS edition of ego-browser for AI coding agents.",
+  "type": "module",
+  "scripts": {
+    "build": "npm --prefix package/ego-browser run build",
+    "test": "npm run test:sdk && npm run test:linux",
+    "test:sdk": "npm --prefix package/ego-browser test",
+    "test:linux": "EGO_LINUX_HEADLESS=1 node --test \"package/ego-linux/test/*.test.mjs\"",
+    "style:check": "npm --prefix package/ego-browser run style:check",
+    "validate:site-skills": "npm --prefix package/ego-browser run validate:site-skills"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joyehuang/ego-browser-linux.git"
+  },
+  "homepage": "https://github.com/joyehuang/ego-browser-linux#readme",
+  "bugs": {
+    "url": "https://github.com/joyehuang/ego-browser-linux/issues"
+  },
+  "license": "MIT"
+}

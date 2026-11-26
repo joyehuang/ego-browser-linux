@@ -1,0 +1,16 @@
+{
+  "profiles": [
+    {
+      "id": "e2e-clean",
+      "name": "E2E Clean (Zero Login)",
+      "kind": "isolated",
+      "description": "Disposable clean BrowserContext with zero cookies or logins for automated E2E runs."
+    },
+    {
+      "id": "staging-seeded",
+      "name": "Staging (Seeded Cookies)",
+      "kind": "isolated-seeded",
+      "description": "Disposable BrowserContext seeded with a snapshot of Default cookies without mutating Default."
+    }
+  ]
+}

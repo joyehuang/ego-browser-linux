@@ -1,0 +1,19 @@
+[Unit]
+Description=Unified TaskSpace and noVNC Web Console for ego-browser
+After=ego-novnc.service ego-chrome.service
+Wants=ego-novnc.service ego-chrome.service
+
+[Service]
+Type=simple
+User={{USER}}
+Group={{GROUP}}
+# Reads EGO_CONSOLE_HOST (default 127.0.0.1), EGO_CONSOLE_PORT (default 6080),
+# EGO_VNC_UPSTREAM (default 127.0.0.1:6081), EGO_CONSOLE_PUBLIC_URL, and EGO_CONSOLE_TOKEN.
+# Switching from loopback SSH tunnel to a Tailscale IP is a 1-line edit in env + restart.
+EnvironmentFile={{HOME}}/.config/ego-browser/env
+ExecStart=/usr/local/bin/node {{REPO_DIR}}/package/ego-linux/bin/ego-browser.mjs --console
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

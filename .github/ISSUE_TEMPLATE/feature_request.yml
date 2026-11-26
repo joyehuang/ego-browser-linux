@@ -1,0 +1,39 @@
+name: Feature Request
+description: Suggest an improvement or new capability for ego-browser-linux
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What workflow or pain point are you trying to solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the feature, CLI flag, Console UX, or plugin hook you'd like to see.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Linux runtime & CDP shim (package/ego-linux)
+        - Unified Web Console & noVNC (:6080)
+        - Multi-profile isolation & concurrency
+        - Plugin & E2E Workflow system
+        - Systemd / deployment / proxy templates
+        - Documentation / examples
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds, existing plugins, or alternative designs you considered.

@@ -1,0 +1,15 @@
+[Unit]
+Description=x11vnc server for ego-browser display {{DISPLAY}}
+After=ego-xvfb.service
+Requires=ego-xvfb.service
+
+[Service]
+Type=simple
+User={{USER}}
+Group={{GROUP}}
+ExecStart=/usr/bin/x11vnc -display {{DISPLAY}} -rfbport {{VNC_PORT}} -rfbportv6 -1 -listen 127.0.0.1 -no6 -noipv6 -forever -shared -nopw -noxdamage
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

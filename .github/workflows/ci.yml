@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ego-browser-sdk:
+    name: SDK (package/ego-browser)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: package/ego-browser
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package/ego-browser/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build, typecheck, and run SDK tests
+        run: npm test
+
+      - name: Validate site skills
+        run: npm run validate:site-skills
+
+      - name: Check formatting
+        run: npm run style:check
+
+  ego-linux-runtime:
+    name: Linux Runtime (package/ego-linux)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package/ego-browser/package-lock.json
+
+      - name: Build ego-browser SDK
+        working-directory: package/ego-browser
+        run: |
+          npm ci
+          npm run build
+
+      - name: Verify Google Chrome
+        run: google-chrome --version
+
+      - name: Run ego-linux runtime tests (headless)
+        env:
+          EGO_LINUX_HEADLESS: "1"
+        run: node --test "package/ego-linux/test/*.test.mjs"

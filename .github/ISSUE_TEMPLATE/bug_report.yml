@@ -1,0 +1,66 @@
+name: Bug Report
+description: Report a bug or unexpected behavior in ego-browser-linux
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting an issue! Please redact any private IP addresses, SSH host aliases, tokens (`EGO_CONSOLE_TOKEN`), cookies, or browser profile paths before submitting.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A concise summary of the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact CLI commands, `ego-browser nodejs` script, or Console steps to trigger the issue.
+      placeholder: |
+        1. Run `ego-browser nodejs ...`
+        2. Open Console at `http://127.0.0.1:6080/`
+        3. Observe error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs. actual behavior
+      description: What did you expect to happen, and what happened instead?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Component
+      options:
+        - Linux runtime & CDP shim (package/ego-linux)
+        - Unified Web Console & noVNC (:6080)
+        - Multi-profile / TaskSpace concurrency
+        - Plugin & E2E Workflow engine
+        - Systemd / deployment / proxy
+        - Upstream SDK / Linux clipboard / skill guide (package/ego-browser)
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Linux distro, Node.js version, Chrome/Chromium version, and Console access mode (SSH / Tailscale / Reverse proxy).
+      placeholder: "Ubuntu 24.04, Node v22.x, Google Chrome 1xx, SSH tunnel"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or output
+      description: Paste redacted stderr, `journalctl` lines, or `ego-browser --status` output.
+      render: shell
