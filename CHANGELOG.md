@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- **Page labels now survive separate `ego-browser nodejs` calls on Linux.** The SDK keyed its page ledger (`~/.ego-browser/state/space-<id>@<instance>.<seq>.json`) by the parent process id, which is stable under the Ego Lite app but new for every Linux CLI call. Each call therefore opened an empty ledger: `task.page("p1")` failed with `page label not found`, the tab was later re-adopted as `openedBy: "unknown"`, and `finish({ keep: [] })` left it open as a user page. `runtimeInstanceId()` now prefers `EGO_BROWSER_INSTANCE_ID`, and the Linux CLI sets it to `chrome-<browser target id>` from Chrome's `/devtools/browser/<id>` endpoint, which is fixed for the life of one Chrome process and changes when Chrome restarts. macOS/Windows behavior is unchanged.
+
 ## [0.1.0] - 2026-11-26
 
 Initial open-source release of `ego-browser-linux`.

@@ -106,8 +106,20 @@ class LedgerLockedError extends Error {
 
 type LedgerFile = { seq: number; path: string };
 
-/** Stable across Agent rounds and Node-service restarts in one Ego Lite run. */
-export function runtimeInstanceId(parentPid = process.ppid): string {
+/**
+ * Stable across Agent rounds and Node-service restarts in one browser run.
+ *
+ * A host whose agent rounds run as separate short-lived processes (the Linux
+ * CLI) sets EGO_BROWSER_INSTANCE_ID to an id bound to the browser process, so
+ * page labels survive from one round to the next. Without it the parent pid
+ * stands in: under Ego Lite that is the long-lived app itself.
+ */
+export function runtimeInstanceId(
+  parentPid = process.ppid,
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  const configured = env.EGO_BROWSER_INSTANCE_ID?.trim();
+  if (configured) return configured;
   return `browser-host:${parentPid}`;
 }
 

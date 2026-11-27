@@ -182,6 +182,33 @@ export async function resolveCdpEndpoint(cdpUrl) {
   throw new Error(`Unsupported EGO_LINUX_CDP_URL protocol: ${parsed.protocol}`);
 }
 
+/**
+ * An id for the running browser process, for the SDK's page ledger.
+ *
+ * The SDK keys page labels by browser instance so a restarted browser never
+ * inherits labels for tabs it no longer has. Under Ego Lite the parent pid is
+ * that key, because the app outlives every agent round; here each round is its
+ * own process with its own parent, so the key has to come from the browser.
+ * Chrome mints a fresh browser target id (the last segment of its
+ * `/devtools/browser/<id>` WebSocket path) on every launch and keeps it for the
+ * life of the process — the same whether this launcher started Chrome or it
+ * runs as an external service behind EGO_LINUX_CDP_URL.
+ *
+ * Returns null when the URL carries no such id. The result only ever holds
+ * `[A-Za-z0-9_-]`, the alphabet the ledger allows in its file names.
+ */
+export function browserInstanceId(wsUrl) {
+  let path;
+  try {
+    path = new URL(String(wsUrl || "")).pathname;
+  } catch {
+    return null;
+  }
+  const match = /\/devtools\/browser\/([^/]+)\/?$/.exec(path);
+  const id = match?.[1].replace(/[^A-Za-z0-9_-]/g, "-");
+  return id ? `chrome-${id}` : null;
+}
+
 export function parseExtraArgs(raw) {
   if (!raw || typeof raw !== "string") return [];
   const args = [];
