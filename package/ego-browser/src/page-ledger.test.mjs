@@ -14,11 +14,82 @@ import { join } from "node:path";
 import { PageLedgerStore, runtimeInstanceId } from "../dist/src/page-ledger.js";
 
 test("runtimeInstanceId is a pure browser-host identifier", () => {
-  const first = runtimeInstanceId(42);
-  const second = runtimeInstanceId(42);
+  const first = runtimeInstanceId(42, {});
+  const second = runtimeInstanceId(42, {});
 
   assert.equal(second, first);
   assert.equal(first, "browser-host:42");
+});
+
+test("runtimeInstanceId prefers EGO_BROWSER_INSTANCE_ID over the parent pid", () => {
+  const env = { EGO_BROWSER_INSTANCE_ID: "chrome-7884c084-dba4" };
+
+  assert.equal(runtimeInstanceId(42, env), "chrome-7884c084-dba4");
+  assert.equal(runtimeInstanceId(43, env), "chrome-7884c084-dba4");
+});
+
+test("runtimeInstanceId falls back to the parent pid when the override is blank", () => {
+  assert.equal(
+    runtimeInstanceId(42, { EGO_BROWSER_INSTANCE_ID: "" }),
+    "browser-host:42",
+  );
+  assert.equal(
+    runtimeInstanceId(42, { EGO_BROWSER_INSTANCE_ID: "  " }),
+    "browser-host:42",
+  );
+});
+
+test("runtimeInstanceId reads process.env by default", () => {
+  const saved = process.env.EGO_BROWSER_INSTANCE_ID;
+  try {
+    process.env.EGO_BROWSER_INSTANCE_ID = "chrome-from-env";
+    assert.equal(runtimeInstanceId(), "chrome-from-env");
+    delete process.env.EGO_BROWSER_INSTANCE_ID;
+    assert.equal(runtimeInstanceId(), `browser-host:${process.ppid}`);
+  } finally {
+    if (saved === undefined) delete process.env.EGO_BROWSER_INSTANCE_ID;
+    else process.env.EGO_BROWSER_INSTANCE_ID = saved;
+  }
+});
+
+test("labels survive separate processes that share an EGO_BROWSER_INSTANCE_ID", async () => {
+  await withTempLedger(async (rootDir) => {
+    // Each Linux CLI call is its own process with its own parent pid; only the
+    // browser-bound id is shared between them.
+    const instanceFor = (parentPid) => () =>
+      runtimeInstanceId(parentPid, {
+        EGO_BROWSER_INSTANCE_ID: "chrome-7884c084-dba4-4dba-a16a-cf6a03d01f41",
+      });
+    const first = new PageLedgerStore({
+      rootDir,
+      browserInstanceId: instanceFor(256854),
+    });
+    const created = await first.initializeCreatedSpace(2, "target-1");
+    assert.equal(created.label, "p1");
+
+    const names = await readdir(rootDir);
+    assert.deepEqual(
+      names
+        .filter((name) => name.startsWith("space-2@"))
+        .map((name) => name.replace(/\.\d+\.json$/, "")),
+      ["space-2@chrome-7884c084-dba4-4dba-a16a-cf6a03d01f41"],
+    );
+
+    const second = new PageLedgerStore({
+      rootDir,
+      browserInstanceId: instanceFor(256919),
+    });
+    const page = await second.getPage(2, "p1");
+    assert.equal(page.targetId, "target-1");
+    assert.equal(page.openedBy, "agent");
+
+    // Without the shared id each process opens its own empty ledger: the bug.
+    const unshared = new PageLedgerStore({
+      rootDir,
+      browserInstanceId: () => runtimeInstanceId(256935, {}),
+    });
+    await assert.rejects(() => unshared.getPage(2, "p1"), /p1/);
+  });
 });
 
 async function withTempLedger(fn) {

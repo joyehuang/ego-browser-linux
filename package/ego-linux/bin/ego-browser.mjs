@@ -13,7 +13,7 @@ import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { browserStatus, stopBrowser } from "../src/chrome.mjs";
+import { browserInstanceId, browserStatus, stopBrowser } from "../src/chrome.mjs";
 import { installDesktopEntry } from "../src/desktop.mjs";
 import {
   CHROME_CONFIG_CANDIDATES,
@@ -340,6 +340,21 @@ function platformGuideFilename(platform = process.platform) {
   return "SKILL.md";
 }
 
+/**
+ * Bind the SDK's page ledger to the browser behind `shim`.
+ *
+ * Every `ego-browser nodejs` call is a new process with a new parent pid, which
+ * the SDK otherwise uses as its browser-instance key; without this, page labels
+ * such as p1 are lost between calls. The SDK runs in this process and reads
+ * process.env lazily, so setting it here, before the harness runs the script,
+ * is enough. An id the caller set explicitly wins.
+ */
+function ensureBrowserInstanceEnv(shim) {
+  if (process.env.EGO_BROWSER_INSTANCE_ID?.trim()) return;
+  const id = browserInstanceId(shim.wsUrl);
+  if (id) process.env.EGO_BROWSER_INSTANCE_ID = id;
+}
+
 function ensureAgentWorkspaceEnv() {
   if (!process.env.EGO_BROWSER_AGENT_WORKSPACE) {
     const bundled = fileURLToPath(BUNDLED_SKILL_WORKSPACE);
@@ -642,6 +657,7 @@ async function runWorkflowCommand(args) {
 
   const shim = await createEgoShim({ headless });
   globalThis.ego = shim.ego;
+  ensureBrowserInstanceEnv(shim);
 
   let disposeEgoSdk;
   try {
@@ -839,6 +855,7 @@ async function main() {
 
   const shim = await createEgoShim({ headless });
   globalThis.ego = shim.ego;
+  ensureBrowserInstanceEnv(shim);
 
   const { runMain, disposeEgoSdk } = await import(harness);
   await loadPlugins({ extraPaths: pluginPaths, target: globalThis });
